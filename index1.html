@@ -1,0 +1,212 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8" />
+    <title>Draw my professor</title>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/react-canvas-draw@1/umd/react-canvas-draw.js"></script> 
+    
+    <!-- Don't use this in production: -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>  <!-- <script type="text/babel"> element
+    -->
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+
+  
+class DrawableCanvas extends ReactCanvasDraw {
+  // Returns a promise that exports the canvas as a Blob object.
+  getPNGBlob() {
+    return new Promise(resolve => {
+      this.canvas.drawing.toBlob(resolve, 'image/png');
+    });
+  }
+}
+
+class Drawings extends React.Component{
+  render() {
+    return(
+      <div className = "pictureContainer" id ={this.props.id}>
+        <p>Artist: {this.props.artist}</p>
+        <p>Professor: {this.props.professor}</p>
+        <img className = "drawing" src={this.props.drawing} alt = "Loading"></img>
+      </div>
+    );
+  }
+}
+
+
+  class App extends React.Component {
+    constructor(props) {
+      super(props);
+       this.handleUndo = this.handleUndo.bind(this);
+       this.handleClear = this.handleClear.bind(this);
+       this.handleSubmit = this.handleSubmit.bind(this);
+       this.updateArtist = this.updateArtist.bind(this);
+       this.updateProf = this.updateProf.bind(this);
+       this.canvasRef = React.createRef();
+
+       this.state = {
+         artist: '',
+         professor: '',
+         drawings: []
+       };
+    }
+    
+    async componentDidmount() {             //This is called once when the component is mounted onto the DOM.
+        let res = fetch('/picture');
+        const resPictures = await response.json();
+     
+
+    for (let i = 0; i < resPictures.length; i++){      
+        res = await fetch(`/picture/${i}`);   
+        res = await res.blob(); 
+        const img = URL.createObjectURL(res);
+        resPictures[i].thePic = img;
+       }
+
+    this.setState({drawings: resPictures})
+    }
+
+     handleUndo() {
+       const canvas = this.canvasRef.current;
+       if (canvas) {
+         canvas.undo();
+       }
+     }
+     handleClear() {
+       const canvas = this.canvasRef.current;
+       if (canvas) {
+         canvas.clear();
+       }
+     }
+
+     updateArtist(event) {
+          this.setState({artist: event.target.value});
+        }
+     updateProf(event) {
+          this.setState({professor: event.target.value});
+     }
+
+     async handleSubmit(){
+       const canvas = this.canvasRef.current;   //Defining constants
+       const {artist, professor} = this.state;
+       const thePic = await canvas.getPNGBlob();
+
+       if (artist == '' && professor == '')     
+       {
+         alert('Fill out the blanks お願いします');   //I'm not a weeb I swear
+         return;  
+       }
+       if (artist == '')
+       {
+         alert('Every artist deserves a name');
+         return;
+       }
+       if (professor == '')
+       {
+         alert("Don't disrespect the professor and give him/her a name!");
+         return;
+       }
+
+       const params = new URLSearchParams();    //Query string search
+       params.set('artist', artist);
+       params.set('professor', professor);
+
+       await fetch(`/picture?${params.toString()}`, {     
+         method: "POST",
+         headers: new Headers({'Content-Type': 'image/png'}),
+         body: thePic   
+
+       });
+
+       this.setState({artist: '', professor: ''});
+       canvas.clear();
+
+       let res = await fetch('/picture');
+       const resPictures = await res.json();
+     
+
+       for (let i = 0; i < resPictures.length; i++){     
+        res = await fetch(`/picture/${i}`);   
+        res = await res.blob(); 
+        const img = URL.createObjectURL(res);
+        resPictures[i].thePic = img;
+       }
+
+       this.setState({drawings: resPictures}) // Updates the state to show the newly uploaded pictures 
+       
+    }
+
+     render() {
+         const drawings = this.state.drawings;
+         return (
+           <>
+           <div className="div1">
+           <h1 className="Title"><img className="logo" src='HackLogo.png' height="40" width="40"/>Draw my professors</h1>
+           <button className="button" onClick={this.handleUndo}>Undo</button>
+           <button className="button" onClick={this.handleClear}>Clear</button>
+           <DrawableCanvas ref={this.canvasRef} />
+           <div>Artist: </div> <input className = "textInput" onChange={this.updateArtist} value={this.state.artist} />
+           <div>Professor: </div><input className = "textInput" onChange={this.updateProf} value={this.state.professor} />
+           <button className="button" onClick={this.handleSubmit}>Submit</button>
+            
+         </div>
+         <hr/>
+         <div>
+          <h3 className="Title">Gallery</h3>
+          <div className="pictureContainer" >
+          {
+
+            drawings.length == 0 ? <p className="normalText">You have not drawn anything yet <br/>你还没有画东西呢<br/>你仲未画野啊<br/>まだ何も描いていない</p>
+             :
+             drawings.map(obj => (
+              <Drawings
+              artist={obj.artist}
+              professor={obj.professor}
+              drawing={obj.thePic}
+              id={obj.id}
+            />
+            ))
+            
+              
+          }
+              
+          
+          </div>
+        </div>
+        </>
+         );
+      
+      }
+
+    }
+
+
+    
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+
+    
+    
+
+    </script>
+    <!--
+      Note: this page is a great way to try React but it's not suitable for production.
+      It slowly compiles JSX with Babel in the browser and uses a large development build of React.
+
+      Read this section for a production-ready setup with JSX:
+      https://reactjs.org/docs/add-react-to-a-website.html#add-jsx-to-a-project
+
+      In a larger project, you can use an integrated toolchain that includes JSX instead:
+      https://reactjs.org/docs/create-a-new-react-app.html
+
+      You can also use React without JSX, in which case you can remove Babel:
+      https://reactjs.org/docs/react-without-jsx.html
+    -->
+  </body>
+</html>

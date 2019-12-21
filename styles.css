@@ -1,0 +1,62 @@
+.button {
+    background-color: #4CAF50; 
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 2px 2px;
+    cursor: pointer;
+    
+}
+
+.Title{
+    color: black;
+    font-family: 'Brush Script MT', cursive; 
+    font-size: 48px;
+    text-align: center;
+}
+
+.div1{
+    margin: auto;
+    width: 50%;
+    border: 3px solid #73AD21;
+    
+}
+.div2{
+    text-align:center;
+}
+
+body{
+    background-image: url('bgimg2.png');   
+}
+
+.input[type=number] {
+    width: 50px;
+  }
+  
+.textInput{
+    font-size: 0.8rem;
+    border: 0.15rem solid #2d2d2d;
+    border-radius: 0rem;
+    padding: 0.1rem;
+    padding: 0.1rem;
+    display: block;
+    width: 300px;
+  }
+  
+.pictureContainer {
+    border: solid 2px rgb(72, 207, 72);
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+ .normalText{
+    font-size: 12px;
+    font-family: "Times New Roman", Times, serif;
+    text-align: center;
+    
+  }
+
